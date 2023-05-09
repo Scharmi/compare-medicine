@@ -9,6 +9,7 @@ export interface TableProps {
     content: Array<any>
     layer?: "chooseCompany" | "chooseMedicine" | "viewMedicine"
     onClickFunction?: Function
+    highlighted?: string
 }
 function List(props: TableProps) {
     const onClickFunction = props.onClickFunction ? props.onClickFunction : () => {console.log("No onClickFunction provided")};
@@ -19,7 +20,7 @@ function List(props: TableProps) {
             case "chooseMedicine":
                 return ["name"]
             case "viewMedicine":
-                return ["name"]
+                return []
             default:
                 return ["name"]
         }
@@ -27,16 +28,26 @@ function List(props: TableProps) {
     const layerHeaders = (layer: "chooseCompany" | "chooseMedicine" | "viewMedicine") => {
         switch (layer) {
             case "chooseCompany":
-                return ["name", "id"]
+                return ["name"]
             case "chooseMedicine":
-                return ["name", "id"]
+                return ["name", "dose", "form", "substance"]
             case "viewMedicine":
-                return ["name", "id"]
+                return ["name", "dose", "form", "substance", "company", "contents", "amount", "unit", "price", "price_per_unit"]
+
         }
     }
+    const highlightedHeader = "company"
     const displayNames = {
         name: (props.layer === "chooseCompany" ? "Nazwa firmy" : "Nazwa leku"),
-        id: "ID",
+        dose: "Dawka",
+        form: "Postać",
+        substance: "Substancja czynna",
+        company: "Firma",
+        contents: "Zawartość",
+        amount: "Ilość",
+        unit: "Jednostka",
+        price: "Cena",
+        price_per_unit: "Cena za jednostkę"
     }
     const displayName = (header: string) => header in displayNames ? displayNames[header as keyof typeof displayNames] : header
     const headers = props.layer ? layerHeaders(props.layer) : Object.keys(props.content[0])
@@ -49,13 +60,16 @@ function List(props: TableProps) {
         return headers.map((header, index) => {
             return (
                 clickable().includes(header) ?
-                <TableCell key={index}><div className="clickable" onClick={() => onClickFunction(header)}>{element[header]}</div></TableCell> :
+                <TableCell key={index}><div className="clickable" onClick={() => onClickFunction(element)}>{element[header]}</div></TableCell> :
                 <TableCell key={index}>{element[header]}</TableCell>     
             )
         })
     }
     const renderTableBody = () => {
         return props.content.map((element, index) => {
+            if(props.highlighted && element[highlightedHeader] === props.highlighted)
+            return <TableRow key={index} className="highlighted">{renderTableRow(element)}</TableRow>
+            else
             return <TableRow key={index}>{renderTableRow(element)}</TableRow>
         })
     }

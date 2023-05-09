@@ -3,3 +3,6 @@
     color: red;
     text-decoration: underline;
 }
+.highlighted {
+    background-color: yellow;
+}
