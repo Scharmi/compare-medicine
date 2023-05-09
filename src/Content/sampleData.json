@@ -16,5 +16,63 @@
             "name": "Firma 4",
             "id": 4
         }
+    ],
+    "sampleMedicines" : [
+        {
+            "name": "Maść na ból dupy",
+            "id": 1
+        },
+        {
+            "name": "Srakolin turbo forte",
+            "id": 2
+        },
+        {
+            "name": "Tren",
+            "id": 3
+        },
+        {
+            "name": "Testosteron",
+            "id": 4
+        },
+        {
+            "name": "Nandrolon",
+            "id": 5
+        },
+        {
+            "name": "Winstrol",
+            "id": 6
+        },
+        {
+            "name": "Oxandrolon",
+            "id": 7
+        },
+        {
+            "name": "Oxymetholon",
+            "id": 8
+        },
+        {
+            "name": "Dianabol",
+            "id": 9
+        },
+        {
+            "name": "Clenbuterol",
+            "id": 10
+        },
+        {
+            "name": "T3",
+            "id": 11
+        },
+        {
+            "name": "Tamoxifen",
+            "id": 12
+        },
+        {
+            "name": "Proviron",
+            "id": 13
+        },
+        {
+            "name": "Arimidex",
+            "id": 14
+        }
     ]
 }

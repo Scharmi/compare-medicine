@@ -1,0 +1,5 @@
+.clickable {
+    cursor: pointer;
+    color: red;
+    text-decoration: underline;
+}
