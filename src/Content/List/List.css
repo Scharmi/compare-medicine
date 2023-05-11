@@ -1,8 +1,34 @@
+body {
+    margin: 0;
+    padding: 0;
+
+}
 .clickable {
     cursor: pointer;
     color: red;
     text-decoration: underline;
+    margin: 0;
+    padding: 0;
 }
 .highlighted {
     background-color: yellow;
+}
+.Table {
+    padding: 0;
+    margin: 0;
+}
+.tableCell {
+    padding: 0px;
+    margin: 0px;
+    font-size: min(30vw, 200px);
+}
+.tableText {
+    padding: 0;
+    margin: 0;
+    font-size: min(1vw, 20px);
+}
+.TableCell {
+    padding: 0;
+    margin: 0;
+    font-size: min(30vw, 200px);
 }

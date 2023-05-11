@@ -4,6 +4,7 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import styled from 'styled-components';
 import './List.css';
 export interface TableProps {
     content: Array<any>
@@ -51,17 +52,28 @@ function List(props: TableProps) {
     }
     const displayName = (header: string) => header in displayNames ? displayNames[header as keyof typeof displayNames] : header
     const headers = props.layer ? layerHeaders(props.layer) : Object.keys(props.content[0])
+    const CustomMarginCell = styled(TableCell)`
+    margin: 0;
+    padding: 20px min(0.6vw, 10px);
+    `;
     const renderTableHead = () => {
         return headers.map((header:string, index) => {
-            return <TableCell key={index}>{displayName(header)}</TableCell>
+            return <CustomMarginCell key={index} className="tableCell"><span className="tableText">{displayName(header)}</span></CustomMarginCell>
         })
     }
     const renderTableRow = (element: any) => {
         return headers.map((header, index) => {
             return (
                 clickable().includes(header) ?
-                <TableCell key={index}><div className="clickable" onClick={() => onClickFunction(element)}>{element[header]}</div></TableCell> :
-                <TableCell key={index}>{element[header]}</TableCell>     
+                <CustomMarginCell 
+                    key={index}
+                    className="tableCell"
+                >
+                    <div className="clickable" onClick={() => onClickFunction(element)}>
+                        <span className="tableText">{element[header]}</span>
+                    </div>
+                </CustomMarginCell> :
+                <CustomMarginCell key={index} className="tableCell"><span className="tableText">{element[header]}</span></CustomMarginCell>     
             )
         })
     }
@@ -75,7 +87,7 @@ function List(props: TableProps) {
     }
     return (
         <div className="Table">
-           <Table sx={{ minWidth: 650 }} aria-label="simple table">
+           <Table aria-label="simple table">
         <TableHead>
           <TableRow>
             {renderTableHead()}

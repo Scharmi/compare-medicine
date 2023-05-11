@@ -16,7 +16,7 @@ export interface ContentProps {
 }
 
 function Content(props: ContentProps) {
-    const backendAddress = "http://localhost:8000"
+    const backendAddress = "https://mimuw-io-be.onrender.com"
     const layer = props.layer
     const [searchText, setSearchText] = useState<string>("")
     const [content, setContent] = useState<Array<any>>([])
@@ -30,6 +30,8 @@ function Content(props: ContentProps) {
         case "chooseCompany":
             onClickFunction = (obj: any) => {
                 props.setParameters({...props.parameters, company: obj.name })
+                setContent([]);
+                setGotBackendData(false);
                 props.setLayer("chooseMedicine")
                 setSearchText("")
             }
@@ -37,6 +39,8 @@ function Content(props: ContentProps) {
         case "chooseMedicine":
             onClickFunction = (obj: any) => {
                 props.setParameters({...props.parameters, medicine: obj })
+                setContent([]);
+                setGotBackendData(false);
                 props.setLayer("viewMedicine")
                 setSearchText("")
             }
@@ -89,7 +93,8 @@ function Content(props: ContentProps) {
             });
         }
         if(layer === "viewMedicine") {
-            fetch(backendAddress + '/group?' + new URLSearchParams({substance: props.parameters.medicine.substance, form: props.parameters.medicine.form, dose: props.parameters.medicine.dose}))
+            const params = props.parameters.medicine.dose? new URLSearchParams({substance: props.parameters.medicine.substance, form: props.parameters.medicine.form, dose: props.parameters.medicine.dose}) : new URLSearchParams({substance: props.parameters.medicine.substance, form: props.parameters.medicine.form})
+            fetch(backendAddress + '/group?' + params)
             .then((response) => {
                 response.json().then(function(data) {
                 console.log(data)
@@ -167,7 +172,7 @@ function Content(props: ContentProps) {
         <div className="Content">
             <div className="returnButton">
                 <Button variant="contained" 
-                    onClick={() => {props.setParameters({company: "", medicine: ""}); props.setLayer("chooseCompany")}}
+                    onClick={() => {props.setParameters({company: "", medicine: ""}); props.setLayer("chooseCompany"); setContent([]); setSearchText(""); setGotBackendData(false)}}
                 >
                 Powrót do strony głównej
                 </Button>
