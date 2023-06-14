@@ -21,3 +21,7 @@
 .comboBox {
     color:red;
 }
+.previousPageButton {
+    margin: 20px;
+    display: flex;
+}

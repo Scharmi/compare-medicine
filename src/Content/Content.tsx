@@ -6,43 +6,51 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-
+import CircularProgress from '@mui/material/CircularProgress';
+import BlockLoader from './BlockLoader/BlockLoader';
+import Graph from './Graph/Graph';
 
 export interface ContentProps {
     layer: "chooseCompany" | "chooseMedicine" | "viewMedicine"
     setLayer: Function;
-    parameters: { company: string, medicine: any};
-    setParameters: Function;
 }
-
+interface ContentState {
+    companies: Array<any>
+    medicines: Array<any>
+    medicineClass: Array<Array<any>>
+}
 function Content(props: ContentProps) {
-    const backendAddress = "https://mimuw-io-be.onrender.com"
+    const [parameters, setParameters] = useState<{company: string, medicine: string}>({company: "", medicine: ""})
+    const backendAddress = "https://mimuw-io-be2.onrender.com"
     const layer = props.layer
-    const [searchText, setSearchText] = useState<string>("")
-    const [content, setContent] = useState<Array<any>>([])
+    const [searchTexts, setSearchTexts] = useState<any>({
+        company: "",
+        medicine: "",
+    })
+    const setSearchText = (text: string) => {
+        setSearchTexts(prevState => ({...prevState, [layer === "chooseCompany" ? "company" : "medicine"]: text}))
+    }
+    const [content, setContent] = useState<ContentState>({
+        companies: [],
+        medicines: [],
+        medicineClass: [],
+    })
     const whatToSearch = layer === "chooseCompany" ? "firmę" : "lek"
     const [companies, setCompanies] = useState<Array<any>>([])
     const [highlightedCompany, setHighlightedCompany] = useState<string>('')
     const [gotBackendData, setGotBackendData] = useState<boolean>(false);
     let onClickFunction:Function;
-
     switch (layer) {
         case "chooseCompany":
             onClickFunction = (obj: any) => {
-                props.setParameters({...props.parameters, company: obj.name })
-                setContent([]);
-                setGotBackendData(false);
-                props.setLayer("chooseMedicine")
-                setSearchText("")
+                setParameters(prevState => ({...prevState, company: obj.name }))
+                waitForResponseAndRender(setContent, {company: obj.name, medicine: ""});
             }
         break;
         case "chooseMedicine":
             onClickFunction = (obj: any) => {
-                props.setParameters({...props.parameters, medicine: obj })
-                setContent([]);
-                setGotBackendData(false);
-                props.setLayer("viewMedicine")
-                setSearchText("")
+                setParameters(prevState => ({...prevState, medicine: obj}))
+                waitForResponseAndRender(setContent, {company: "", medicine: obj});
             }
         break;
         default:
@@ -66,14 +74,14 @@ function Content(props: ContentProps) {
         }
         return 0;
     }
-
-    useEffect(() => {
+    const waitForResponseAndRender = (setContent: Function, params:any) => {
+        setGotBackendData(false);
         if(layer === "chooseCompany") {
-            fetch(backendAddress + '/companies')
+            fetch(backendAddress + '/medicines?' + new URLSearchParams({company: params.company}))
             .then((response) => {
                 response.json().then(function(data) {
-                setContent(makeCompanyObjects(data.companies.sort()));
-                setGotBackendData(true);
+                setContent((content:any) => ({...content, medicines: data}));
+                props.setLayer("chooseMedicine");
             });
             })
             .catch((err) => {
@@ -81,39 +89,41 @@ function Content(props: ContentProps) {
             });
         }
         if(layer === "chooseMedicine") {
-            fetch(backendAddress + '/medicines?' + new URLSearchParams({company: props.parameters.company}))
+            const searchParams = params.medicine.dose? new URLSearchParams({substance: params.medicine.substance, form: params.medicine.form, dose: params.medicine.dose}) : new URLSearchParams({substance: params.medicine.substance, form: params.medicine.form})
+            fetch(backendAddress + '/group?' + searchParams)
             .then((response) => {
                 response.json().then(function(data) {
-                setContent(data);
-                setGotBackendData(true);
-            });
-            })
-            .catch((err) => {
-               console.log(err);
-            });
-        }
-        if(layer === "viewMedicine") {
-            const params = props.parameters.medicine.dose? new URLSearchParams({substance: props.parameters.medicine.substance, form: props.parameters.medicine.form, dose: props.parameters.medicine.dose}) : new URLSearchParams({substance: props.parameters.medicine.substance, form: props.parameters.medicine.form})
-            fetch(backendAddress + '/group?' + params)
-            .then((response) => {
-                response.json().then(function(data) {
-                console.log(data)
                 let newSet = new Set();
-                data.forEach((element: any) => {
+                makeDisplayDataFromMedicineClass(data).forEach((element: any) => {
                     newSet.add(element.company)
                 })
-                setGotBackendData(true);
                 setCompanies(Array.from(newSet))
-                setContent(data.sort(compareMedicines));
+                setContent((prevState:ContentState) => ({...prevState, medicineClass: data.sort(compareMedicines)}));
+                props.setLayer("viewMedicine");
             });
             })
             .catch((err) => {
                 console.log(err);
             });
         }
-
+    }
+    useEffect(() => {
+        if(layer === "chooseCompany") {
+            fetch(backendAddress + '/companies')
+            .then((response) => {
+                response.json().then(function(data) {
+                setContent((prevState:ContentState) => ({...prevState, companies: makeCompanyObjects(data.companies.sort())}));
+                setGotBackendData(true);
+            })
+            })
+            .catch((err) => {
+               console.log(err);
+            });
+        }
+        else {
+            setGotBackendData(true);
+        }
         return () => {
-            console.log("Component unmounted")
         }
     }, [props.layer])
 
@@ -128,7 +138,7 @@ function Content(props: ContentProps) {
                 <TextField
                     id="outlined-helperText"
                     label={"Wyszukaj " + whatToSearch}
-                    value={searchText}
+                    value={searchTexts[layer === "chooseCompany" ? "company" : "medicine"]}
                     onChange={(event) => setSearchText(event.target.value)}
                 />
             )
@@ -162,27 +172,77 @@ function Content(props: ContentProps) {
         }
         return <></>
     }
-    const renderList = () => {
-        if(gotBackendData) {
-            return <List onClickFunction={onClickFunction} content={filter(content, searchText)} layer={layer} highlighted={highlightedCompany}/>
+    const makeDisplayDataFromMedicineClass = (medicineClass: Array<Array<any>>) => {
+        let displayData: Array<any> = [];
+        medicineClass.forEach((element) => {
+            displayData.push(element[element.length - 1])
+        })
+        return displayData;
+    }
+    const contentToDisplay = (layer: string) => {
+        switch (layer) {
+            case "chooseCompany":
+                return content.companies;
+            case "chooseMedicine":
+                return content.medicines;
+            case "viewMedicine":
+                return makeDisplayDataFromMedicineClass(content.medicineClass);
+            default:
+                return [];
         }
-        return <div>Ładowanie...</div>
+    }
+    const renderList = () => {
+            return <List onClickFunction={onClickFunction} content={filter(contentToDisplay(layer), searchTexts[layer === "chooseCompany" ? "company" : "medicine"])} layer={layer} highlighted={highlightedCompany}/>
+    }
+    const previousPageButton = () => {
+        if(layer === "chooseMedicine") {
+            return (
+                <div className="previousPageButton">
+                <Button variant="contained" 
+                    onClick={() => {setParameters((prevState:any) => ({...prevState, company: ""})); setSearchText(""); props.setLayer("chooseCompany"); }}
+                >
+                Powrót do poprzedniej strony
+                </Button>
+                </div>
+            )
+        }
+        if(layer === "viewMedicine") {
+            return (
+                <div className="previousPageButton">
+                <Button variant="contained" 
+                    onClick={() => {setParameters((prevState:any) => ({...prevState, medicine: ""})); props.setLayer("chooseMedicine");}}
+                >
+                Powrót do poprzedniej strony
+                </Button>
+                </div>
+            )
+        }
+        return <></>
     }
     return (
         <div className="Content">
             <div className="returnButton">
                 <Button variant="contained" 
-                    onClick={() => {props.setParameters({company: "", medicine: ""}); props.setLayer("chooseCompany"); setContent([]); setSearchText(""); setGotBackendData(false)}}
+                    onClick={() => {
+                        setParameters({company: "", medicine: ""}); 
+                        props.setLayer("chooseCompany"); 
+                        setContent((prevState:ContentState) => ({...prevState, medicineClass: [], medicines: []}));
+                        setSearchTexts({company: "", medicine: ""});
+                    }}
                 >
                 Powrót do strony głównej
                 </Button>
             </div>
+            {previousPageButton()}
             <div className="searchBar">
+                
                 {renderSearchBar()}
                 {renderComboBox()}
             </div>
             <div className="table">
+                {gotBackendData? <></> : <BlockLoader/>}
                 {renderList()}
+                {layer === "viewMedicine" ? <Graph medicineClass={content.medicineClass}/> : <></>}
             </div>
         </div>
     );

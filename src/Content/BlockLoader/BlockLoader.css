@@ -1,0 +1,18 @@
+.blockLoader {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: .4;
+    justify-content: center;
+    background-color: black;
+    overflow: hidden;
+    position: fixed;
+}
+.circularProgressWrapper {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}

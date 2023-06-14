@@ -54,7 +54,7 @@ function List(props: TableProps) {
     const headers = props.layer ? layerHeaders(props.layer) : Object.keys(props.content[0])
     const CustomMarginCell = styled(TableCell)`
     margin: 0;
-    padding: 20px min(0.6vw, 10px);
+    padding: 20px min(0.4vw, 10px);
     `;
     const renderTableHead = () => {
         return headers.map((header:string, index) => {

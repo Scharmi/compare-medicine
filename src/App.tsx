@@ -5,9 +5,9 @@ import './App.css';
 
 function App() {
   const [layer, setLayer] = useState<"chooseCompany" | "chooseMedicine" | "viewMedicine">("chooseCompany")
-  const [parameters, setParameters] = useState<{company: string, medicine: string}>({company: "", medicine: ""})
+  
   return (
-    <Content layer={layer} setLayer={setLayer} parameters={parameters} setParameters={setParameters}/>
+    <Content layer={layer} setLayer={setLayer}/>
   );
 }
 
