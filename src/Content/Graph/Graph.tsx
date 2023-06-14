@@ -55,7 +55,7 @@ for (let sameMedicineGroup of medicineData) {
         axisX: {
             lineColor: "black",
             labelFontColor: "black",
-            valueFormatString: "MM.YYYY"
+            valueFormatString: "DD.MM.YYYY"
         },
         axisY2: {
             gridThickness: 0,
